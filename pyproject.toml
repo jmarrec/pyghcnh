@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyghcnh"
-version = "0.1.0"
+version = "0.2.0"
 description = "Retrieve NOAA NCEI Global Historical Climatology Network hourly (GHCNh) weather data into pandas"
 readme = "README.md"
 authors = [{ name = "Julien Marrec", email = "contact@effibem.com" }]
