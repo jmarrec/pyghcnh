@@ -1,5 +1,9 @@
 # pyghcnh
 
+[![pypi](https://img.shields.io/pypi/v/pyghcnh.svg)](https://pypi.org/project/pyghcnh/)
+[![python](https://img.shields.io/pypi/pyversions/pyghcnh.svg)](https://pypi.org/project/pyghcnh/)
+[![Build Status](https://github.com/jmarrec/pyghcnh/actions/workflows/dev.yml/badge.svg)](https://github.com/jmarrec/pyghcnh/actions/workflows/dev.yml)
+
 Retrieve weather data from NOAA NCEI's
 [Global Historical Climatology Network hourly (GHCNh)](https://www.ncei.noaa.gov/products/global-historical-climatology-network-hourly)
 into pandas.
@@ -7,12 +11,19 @@ into pandas.
 GHCNh replaces the Integrated Surface Database (ISD), which reached end of life in August 2025 and no longer
 receives updates.
 
+* GitHub: <https://github.com/jmarrec/pyghcnh>
+* PyPI: <https://pypi.org/project/pyghcnh/>
+
 ## Installation
 
 ```bash
-pip install -e .
-# With the dev tools (pre-commit, black, isort, flake8, mypy)
-pip install -e ".[dev]"
+pip install pyghcnh
+```
+
+For development:
+
+```bash
+pip install -e ".[dev]"  # With the dev tools (pre-commit, black, isort, flake8, mypy, pytest)
 pre-commit install
 ```
 
