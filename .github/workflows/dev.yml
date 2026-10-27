@@ -1,0 +1,32 @@
+name: dev workflow
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run pre-commit
+        run: pre-commit run --all-files --show-diff-on-failure
+
+      - name: Run tests
+        run: pytest --cov=pyghcnh --cov-branch --cov-report= tests
+
+      - name: Run network tests
+        # Downloads real data from NCEI
+        run: pytest -m network --cov=pyghcnh --cov-branch --cov-append --cov-report=xml --cov-report=term-missing tests
