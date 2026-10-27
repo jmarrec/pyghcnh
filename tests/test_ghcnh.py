@@ -5,7 +5,7 @@ import time
 import pandas as pd
 import pytest
 
-from pyghcnh.GHCNh import GHCNh
+from pyghcnh.ghcnh import GHCNh
 
 # A few rows from the real ghcnh-station-list.csv
 STATION_LIST_CSV = """GHCN_ID,LATITUDE,LONGITUDE,ELEVATION,STATE,NAME,GSN,(US)HCN_(US)CRN,WMO_ID,ICAO,ISO_CODE
@@ -78,14 +78,14 @@ class FakeResponse:
 
 @pytest.fixture
 def fake_get(monkeypatch):
-    """Replace requests.get in pyghcnh.GHCNh, recording the requested URLs."""
+    """Replace requests.get in pyghcnh.ghcnh, recording the requested URLs."""
     calls = []
 
     def _get(url, **kwargs):
         calls.append(url)
         return FakeResponse(b"NEW CONTENT")
 
-    monkeypatch.setattr("pyghcnh.GHCNh.requests.get", _get)
+    monkeypatch.setattr("pyghcnh.ghcnh.requests.get", _get)
     return calls
 
 
