@@ -36,12 +36,19 @@ dev = [
     "flake8",
     "flake8-docstrings",
     "mypy",
+    "pytest>=9",
     "pandas-stubs",
     "types-requests",
 ]
 
 [tool.setuptools]
 packages = ["pyghcnh"]
+
+[tool.pytest]
+addopts = ["-m", "not network"]
+markers = [
+    "network: tests that download data from NCEI (run with: pytest -m network)",
+]
 
 [tool.black]
 line-length = 120

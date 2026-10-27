@@ -2,3 +2,4 @@
 max-line-length = 120
 ignore = E402, D100, D104
 docstring-convention = google
+per-file-ignores = tests/*: D103
