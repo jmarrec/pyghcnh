@@ -31,6 +31,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pre-commit",
+    "bump2version",
     "black",
     "isort",
     "flake8",

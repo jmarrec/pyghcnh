@@ -53,6 +53,14 @@ Both return a DataFrame indexed by a UTC `DatetimeIndex`, with the columns liste
 pre-commit run --all-files
 ```
 
+To release, bump the version (this updates `pyproject.toml` and `pyghcnh/__init__.py`, commits and tags), then push
+the tag, which triggers the PyPI publishing workflow:
+
+```bash
+bump2version patch  # possible: major / minor / patch
+git push --follow-tags
+```
+
 ## License
 
 MIT, see [LICENSE](LICENSE).
