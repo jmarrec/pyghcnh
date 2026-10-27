@@ -1,4 +1,6 @@
 import math
+import os
+import time
 
 import pandas as pd
 import pytest
@@ -61,6 +63,68 @@ def test_closest_weather_stations(ghcnh):
     assert df.index.tolist() == ["FRI0000LFRH", "FRU56121004"]
     assert df["distance"].is_monotonic_increasing
     assert df["distance"].iloc[0] < 1.0
+
+
+class FakeResponse:
+    """Minimal stand-in for requests.Response."""
+
+    def __init__(self, content: bytes):
+        """Store the content to return."""
+        self.content = content
+
+    def raise_for_status(self):
+        """Never raise."""
+
+
+@pytest.fixture
+def fake_get(monkeypatch):
+    """Replace requests.get in pyghcnh.GHCNh, recording the requested URLs."""
+    calls = []
+
+    def _get(url, **kwargs):
+        calls.append(url)
+        return FakeResponse(b"NEW CONTENT")
+
+    monkeypatch.setattr("pyghcnh.GHCNh.requests.get", _get)
+    return calls
+
+
+def _make_stale(path):
+    two_months_ago = time.time() - 60 * 24 * 60 * 60
+    os.utime(path, (two_months_ago, two_months_ago))
+
+
+def test_update_station_list_up_to_date(ghcnh, fake_get):
+    assert not ghcnh.update_station_list()
+    assert fake_get == []
+
+
+def test_update_station_list_stale_dry_run(ghcnh, fake_get):
+    _make_stale(ghcnh.ghcnh_stationlist_path)
+    assert ghcnh.update_station_list(dry_run=True)
+    assert fake_get == []
+    assert ghcnh.ghcnh_stationlist_path.read_text() == STATION_LIST_CSV
+
+
+def test_update_station_list_stale(ghcnh, fake_get):
+    _make_stale(ghcnh.ghcnh_stationlist_path)
+    assert ghcnh.update_station_list()
+    assert len(fake_get) == 1
+    assert fake_get[0].endswith("/doc/ghcnh-station-list.csv")
+    assert ghcnh.ghcnh_stationlist_path.read_bytes() == b"NEW CONTENT"
+
+
+def test_update_station_list_force(ghcnh, fake_get):
+    assert ghcnh.update_station_list(force=True)
+    assert len(fake_get) == 1
+    assert ghcnh.ghcnh_stationlist_path.read_bytes() == b"NEW CONTENT"
+
+
+def test_update_station_list_missing(ghcnh, fake_get, tmp_path):
+    ghcnh.ghcnh_stationlist_path = tmp_path / "subdir" / "ghcnh-station-list.csv"
+    assert ghcnh.update_station_list()
+    assert len(fake_get) == 1
+    assert ghcnh.ghcnh_stationlist_path.read_bytes() == b"NEW CONTENT"
 
 
 @pytest.mark.network

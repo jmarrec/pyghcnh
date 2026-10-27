@@ -37,6 +37,7 @@ dev = [
     "flake8-docstrings",
     "mypy",
     "pytest>=9",
+    "pytest-cov",
     "pandas-stubs",
     "types-requests",
 ]
