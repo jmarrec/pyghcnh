@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from pyghcnh.degree_days import DegreeDayMethod, calculate_cdd, calculate_hdd
-from pyghcnh.GHCNh import GHCNh
+from pyghcnh.resampling import to_daily, to_monthly
 
 NAN = float("nan")
 
@@ -39,7 +39,7 @@ def _skewed_day_then_empty_day() -> pd.DataFrame:
 
 
 def test_to_daily_mean():
-    df_daily = GHCNh.to_daily(_skewed_day_then_empty_day())
+    df_daily = to_daily(_skewed_day_then_empty_day())
 
     assert len(df_daily) == 2
     day1 = df_daily.iloc[0]
@@ -55,7 +55,7 @@ def test_to_daily_mean():
 
 
 def test_to_daily_meteofrance():
-    df_daily = GHCNh.to_daily(_skewed_day_then_empty_day(), method=DegreeDayMethod.METEOFRANCE)
+    df_daily = to_daily(_skewed_day_then_empty_day(), method=DegreeDayMethod.METEOFRANCE)
 
     day1 = df_daily.iloc[0]
     # (10 + 30) / 2 = 20°C: no heating, unlike with the daily mean of ~10.8°C
@@ -64,7 +64,7 @@ def test_to_daily_meteofrance():
 
 
 def test_to_daily_thresholds():
-    df_daily = GHCNh.to_daily(_skewed_day_then_empty_day(), hdd_threshold=15.0, cdd_threshold=10.0)
+    df_daily = to_daily(_skewed_day_then_empty_day(), hdd_threshold=15.0, cdd_threshold=10.0)
 
     day1 = df_daily.iloc[0]
     expected_mean = (23 * 10.0 + 30.0) / 24
@@ -73,7 +73,7 @@ def test_to_daily_thresholds():
 
 
 def test_to_daily_missing_day_is_nan():
-    df_daily = GHCNh.to_daily(_skewed_day_then_empty_day())
+    df_daily = to_daily(_skewed_day_then_empty_day())
 
     day2 = df_daily.iloc[1]
     assert math.isnan(day2["temperature"])
@@ -88,11 +88,11 @@ def test_to_daily_tz():
     # 23:00 and 23:30 UTC on Jan 1, but 00:00 and 00:30 on Jan 2 in Paris (UTC+1 in winter)
     df = _hourly(["2026-01-01T22:00:00", "2026-01-01T23:00:00", "2026-01-01T23:30:00"], [10.0, 20.0, 30.0])
 
-    df_utc = GHCNh.to_daily(df)
+    df_utc = to_daily(df)
     assert len(df_utc) == 1
     assert df_utc["temperature"].iloc[0] == pytest.approx(20.0)
 
-    df_paris = GHCNh.to_daily(df, tz="Europe/Paris")
+    df_paris = to_daily(df, tz="Europe/Paris")
     assert str(df_paris.index.tz) == "Europe/Paris"
     assert df_paris.index[0] == pd.Timestamp("2026-01-01", tz="Europe/Paris")
     assert df_paris["temperature"].tolist() == pytest.approx([10.0, 25.0])
@@ -102,8 +102,8 @@ def test_to_monthly():
     # Jan 1 at 10°C with 3 mm of rain, Jan 2 at 20°C, nothing in February, Mar 1 at 5°C
     timestamps = ["2026-01-01T12:00:00", "2026-01-01T13:00:00", "2026-01-02T12:00:00", "2026-03-01T12:00:00"]
     df = _hourly(timestamps, [10.0, 10.0, 20.0, 5.0], precipitation=[1.0, 2.0, NAN, NAN])
-    df_daily = GHCNh.to_daily(df)
-    df_monthly = GHCNh.to_monthly(df_daily)
+    df_daily = to_daily(df)
+    df_monthly = to_monthly(df_daily)
 
     assert df_monthly.index.tolist() == [
         pd.Timestamp("2026-01-01", tz="UTC"),

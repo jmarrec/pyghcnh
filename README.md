@@ -46,6 +46,36 @@ df_por = g.get_period_of_record("FRI0000LFRH")
 
 Both return a DataFrame indexed by a UTC `DatetimeIndex`, with the columns listed in `GHCNh.KEPT_COLS`.
 
+### Daily and monthly data, with Degree Days
+
+```python
+from pyghcnh.degree_days import DegreeDayMethod
+from pyghcnh.resampling import to_daily, to_monthly
+
+# Days are split in the given time zone (UTC if omitted)
+df_daily = to_daily(df, tz="Europe/Paris", hdd_threshold=18.0, cdd_threshold=18.0, method=DegreeDayMethod.MEAN)
+df_monthly = to_monthly(df_daily)
+```
+
+* `to_daily` adds `temperature_min`, `temperature_max`, `hdd` and `cdd` columns. `precipitation` is summed, the other
+  variables are averaged. `wind_direction` is dropped, since averaging compass directions is meaningless.
+* The Degree Days use the daily temperature given by `method`:
+  * `DegreeDayMethod.MEAN`: the mean of the day's observations
+  * `DegreeDayMethod.METEOFRANCE`: `(Tmin + Tmax) / 2`, as Météo-France does
+* `to_monthly` sums `hdd`, `cdd` and `precipitation`, takes the extremes of `temperature_min` and `temperature_max`,
+  averages the rest, and adds `n_days`, the number of days with temperature data: sums are lower for a month with
+  missing days.
+* A day or month without any data is NaN, not 0.
+
+The Degree Days functions also work on their own, on a float or a `pd.Series`:
+
+```python
+from pyghcnh.degree_days import calculate_cdd, calculate_hdd
+
+calculate_hdd(12.5)  # 5.5
+calculate_cdd(df_daily["temperature"], cdd_threshold=22.0)
+```
+
 ## Data notes
 
 * NCEI publishes Parquet only per year (`access/by-year/<year>/parquet/`). The period of record per station
