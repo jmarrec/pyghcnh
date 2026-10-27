@@ -30,7 +30,7 @@ pre-commit install
 ## Usage
 
 ```python
-from pyghcnh.ghcnh import GHCNh
+from pyghcnh import GHCNh
 
 g = GHCNh()  # Downloads support/ghcnh-station-list.csv, refreshed when older than a month
 
